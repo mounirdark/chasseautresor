@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pour toi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Karla:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root { --cacao:#3A2519; --cacao2:#5A3A29; --caramel:#C98E5B; --creme:#F7ECDC; --or:#D8A94A; --rose:#E8A3AE; --brume:#DCC3A8; --discret:#7A5A47; }
+  * { box-sizing: border-box; }
+  html { background: var(--cacao); }
+  body { margin: 0; min-height: 100vh; color: var(--creme); font: 1.05rem/1.5 'Karla', system-ui, sans-serif; }
+  main { max-width: 30rem; margin: 0 auto; padding: 1.5rem 1.25rem 4rem; }
+  .niv { color: var(--brume); margin: 0 0 .4rem; font-size: .95rem; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: clamp(1.7rem, 6.5vw, 2.3rem); line-height: 1.2; margin: 0 0 1.25rem; }
+  p { margin: 0 0 1rem; }
+  button { padding: .85rem 1.5rem; border: 0; border-radius: 999px; background: var(--or); color: var(--cacao); font: inherit; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--or); outline-offset: 3px; }
+  input { width: 100%; padding: .9rem 1rem; border: 0; border-radius: 14px; background: var(--creme); color: var(--cacao); font: inherit; font-size: 1.2rem; letter-spacing: .12em; text-align: center; }
+  .row { display: flex; gap: .6rem; margin-top: .8rem; }
+  .row input { flex: 1; min-width: 0; }
+  .note { color: var(--brume); font-size: .95rem; }
+  .erreur { color: #FFC9C0; min-height: 1.4rem; margin: .6rem 0 0; }
+
+  /* Niveau 1 : coloriage par numéros */
+  .palette { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin: 0 0 1rem; }
+  .sw { display: flex; align-items: center; gap: .45rem; padding: .5rem .7rem; background: var(--cacao2); color: var(--creme); border: 2px solid transparent; }
+  .sw i { width: 1.3rem; height: 1.3rem; border-radius: 50%; display: block; }
+  .sw[aria-pressed="true"] { border-color: var(--creme); }
+  .grille { display: grid; gap: 2px; touch-action: none; user-select: none; -webkit-user-select: none; margin: 0 auto 1rem; max-width: 26rem; }
+  .cel { aspect-ratio: 1; border-radius: 3px; background: var(--cacao2); color: var(--brume); font-size: clamp(.45rem, 2.4vw, .7rem); display: flex; align-items: center; justify-content: center; }
+  .cel.hl { box-shadow: inset 0 0 0 2px var(--or); }
+  .cel.faux { animation: sec .3s; }
+  @keyframes sec { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  .fini .cel.code { animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 50% { filter: brightness(1.35); } }
+
+  /* Attente */
+  .compte { font-family: 'Fraunces', Georgia, serif; font-size: 2.8rem; margin: .4rem 0 1rem; text-align: center; }
+
+  /* Tickets (poème, bon) */
+  .ticket { --r: 12px; background: var(--creme); color: var(--cacao); padding: 1.3rem 1.9rem 1.4rem; border-radius: 10px; margin-bottom: 1.2rem;
+    -webkit-mask: radial-gradient(circle var(--r) at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle var(--r) at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+            mask: radial-gradient(circle var(--r) at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle var(--r) at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat; }
+  .poeme { font-family: 'Fraunces', Georgia, serif; font-size: 1.15rem; line-height: 1.7; margin: 0; }
+  .poeme.indice .l { color: #C9556A; font-weight: 600; }
+  .ghost { background: transparent; color: var(--brume); border: 2px solid var(--caramel); margin: 0 0 1.2rem; }
+
+  /* Niveau 3 : tu me connais ? */
+  .zones { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin: .9rem 0 1.1rem; }
+  .zone { background: var(--cacao2); border-radius: 14px; padding: .6rem; }
+  .depot { width: 100%; padding: .55rem .6rem; font-size: .9rem; background: transparent; color: var(--brume); border: 2px dashed var(--caramel); margin-bottom: .5rem; }
+  .liste { display: flex; flex-direction: column; gap: .4rem; min-height: 2.4rem; }
+  .z0 .liste { flex-direction: row; flex-wrap: wrap; }
+  .jcarte { background: var(--creme); color: var(--cacao); border-radius: 10px; padding: .55rem .8rem; font-size: .95rem; text-align: left; }
+  .jcarte.sel { outline: 3px solid var(--or); outline-offset: 2px; }
+
+  /* Niveau 4 */
+  .q { font-weight: 600; margin: 0 0 .4rem; }
+  .choix { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1.2rem; }
+  .opt { background: var(--cacao2); color: var(--creme); padding: .65rem 1.1rem; }
+  .opt[aria-pressed="true"] { background: var(--or); color: var(--cacao); }
+  .bon .pre { letter-spacing: .2em; font-size: .8rem; color: var(--discret); margin: 0; }
+  .bon .gros { font-family: 'Fraunces', Georgia, serif; font-size: 1.9rem; line-height: 1.2; margin: .2rem 0 .9rem; }
+  .bon .ligne { margin: 0 0 .3rem; }
+  .bon .petit { color: var(--discret); font-size: .92rem; margin: .8rem 0 0; }
+  .bon .coupe { border-top: 2px dotted rgba(58, 37, 25, .35); padding-top: .8rem; margin-top: 1rem; }
+  @media (prefers-reduced-motion: reduce) { .fini .cel.code, .cel.faux { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="niv" id="niv"></p>
+  <h1 id="titre"></h1>
+  <div id="ecran"></div>
+</main>
+
+<script>
+  // ====== À PERSONNALISER ======
+  const CONFIG = {
+    prenom: 'Hind',
+    signature: '— Mounir',
+    code: '1403',   // 4 chiffres, caché dans le dessin
+    intro1: 'Un gâteau au chocolat, sans sucre, promis. Choisis une couleur, puis touche (ou glisse le doigt sur) les cases qui portent son numéro. Quand tout est colorié, un secret se cache dedans.',
+    attente: { titre: 'À tout à l’heure ♥', texte: 'Je reviens dans 12 heures.' },
+    intro2: 'Lis bien ce que j’ai écrit pour toi. Il cache un mot, et ce mot ouvre la suite.',
+    // Le mot-clé est formé par la première lettre de chaque ligne
+    poeme: [
+      'Chaque matin, tu es ma première pensée,',
+      'Où que tu sois, je te sais tout près,',
+      'Et même de loin, rien ne change vraiment,',
+      'Un jour on se retrouvera, sans compter les heures,',
+      'Rien ne vaut un moment avec toi.'
+    ],
+    intro3: 'Est-ce que tu me connais bien ? Touche une carte, puis la colonne où elle va.',
+    colonnes: ['Ce que j’aime', 'Ce que je n’aime pas'],
+    // Exemples à remplacer par tes vraies cartes (aime: true = ce que tu aimes)
+    cartes: [
+      { t: 'Les crêpes', aime: true }, { t: 'Les balades au bord de l’eau', aime: true },
+      { t: 'Les films d’action', aime: true }, { t: 'Le thé', aime: true },
+      { t: 'Les voyages', aime: true }, { t: 'Le chocolat noir', aime: true },
+      { t: 'Se lever tôt', aime: false }, { t: 'Les araignées', aime: false },
+      { t: 'La sauce piquante', aime: false }, { t: 'Attendre en retard', aime: false },
+      { t: 'Les embouteillages', aime: false }, { t: 'Faire la queue', aime: false }
+    ],
+    intro4: 'Dernier niveau : c’est toi qui composes ton date.',
+    date: [
+      { q: 'L’ambiance', o: ['Cocooning', 'Découverte', 'Surprise'] },
+      { q: 'Le moment', o: ['Une journée', 'Une soirée', 'Un week-end'] },
+      { q: 'Je m’occupe', o: ['Du repas', 'De l’activité', 'De tout'] }
+    ],
+    messageFinal: 'Bon valable une fois, quand tu veux. Montre-le-moi, et on organise ça ensemble.'
+  };
+  let ATTENTE = 12 * 3600 * 1000;
+  // ========================
+
+  const GLYPH = { 0:'111101101101111', 1:'010110010010111', 2:'111001111100111', 3:'111001111001111', 4:'101101111001001',
+                  5:'111100111001111', 6:'111100111101111', 7:'111001001001001', 8:'111101111101111', 9:'111101111001111' };
+  const KEY = 'chasse-hind-v1';
+  const defaut = () => ({ step: 1, cells: [], t1: 0, t2: 0, pos: [], ordre: [], choix: {}, bon: 0 });
+  const lire = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } };
+  const ecrire = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+  let S = Object.assign(defaut(), lire() || {});
+  let iv = null;
+  const $ = (id) => document.getElementById(id);
+  const ecran = $('ecran');
+  const h = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
+  const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const fmt = (ms) => { const s = Math.ceil(ms / 1000); return [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map((x) => String(x).padStart(2, '0')).join(':'); };
+  const titre = (niv, t) => { $('niv').textContent = niv; $('titre').textContent = t; };
+
+  // Un champ + un bouton pour valider
+  function saisie(placeholder, mode, verifier, messageErreur) {
+    const row = h('div', 'row'), inp = h('input'), b = h('button', null, 'Valider'), err = h('p', 'erreur');
+    inp.placeholder = placeholder; inp.autocomplete = 'off'; inp.setAttribute('aria-label', placeholder);
+    if (mode) inp.inputMode = mode;
+    b.type = 'button';
+    const go = () => { if (verifier(inp.value)) return; err.textContent = messageErreur; };
+    b.onclick = go; inp.onkeydown = (e) => { if (e.key === 'Enter') go(); };
+    row.append(inp, b);
+    return [row, err];
+  }
+
+  // ---------- Niveau 1 : le gâteau à colorier ----------
+  // Chaque chiffre de IMAGE est un numéro de couleur (voir COULEURS). Le code (4 chiffres) s'écrit en « pépites »
+  // légèrement plus claires dans la bande du gâteau, au milieu d'autres pépites qui ne servent à rien.
+  const IMAGE = [
+    '1111111111111111111',
+    '1116161111111111111',
+    '1166666111111881111',
+    '1166666111118111111',
+    '1116661111166111111',
+    '1111611111166111111',
+    '1122222422222222211',
+    '1222422224222222221',
+    '1222222222222422221',
+    '1322332233233223231',
+    '1332333234333323331',
+    '1333333333333333331',
+    '1333333333333333331',
+    '1333333333333333331',
+    '1333333333333333331',
+    '1333333333333333331',
+    '1333334333333334331',
+    '1333333333333433331',
+    '1555555555555555551',
+    '1555555555555555551',
+    '1333333333333333431',
+    '1333433333334333331',
+    '1333333343333334331',
+    '1343333333333333331',
+    '7777777777777777777',
+    '1177777777777777711',
+    '1111111111111111111'
+  ];
+  const COULEURS = ['#F6D6D9', '#3B1E12', '#7A4528', '#8A5030', '#F7ECDC', '#D9627A', '#BFC7D1', '#5B8F4E'];
+  const CODE_RANG = 11, CODE_COL = 2;
+  function ecran1() {
+    titre('Niveau 1 sur 4', 'Un gâteau à colorier');
+    const IMG = IMAGE.map((r) => r.split('').map(Number)), COLS = IMG[0].length, codeIdx = [];
+    CONFIG.code.split('').forEach((d, k) => {
+      for (let y = 0; y < 5; y++) for (let x = 0; x < 3; x++) {
+        const on = GLYPH[d][y * 3 + x] === '1', c = CODE_COL + k * 4 + x;
+        IMG[CODE_RANG + y][c] = on ? 4 : 3;
+        if (on) codeIdx.push((CODE_RANG + y) * COLS + c);
+      }
+    });
+    const L = IMG.flat();
+    if (S.cells.length !== L.length) S.cells = L.map(() => 0);
+    let coul = 1, drag = false, codeVu = false, aide = false;
+
+    const pal = h('div', 'palette');
+    COULEURS.forEach((col, i) => {
+      const n = i + 1, b = h('button', 'sw'); b.type = 'button'; b.setAttribute('aria-pressed', n === 1);
+      b.setAttribute('aria-label', 'Couleur ' + n);
+      b.innerHTML = '<i style="background:' + col + '"></i>' + n;
+      b.onclick = () => { coul = n; [...pal.children].forEach((x, j) => x.setAttribute('aria-pressed', j + 1 === n)); surligner(); };
+      pal.append(b);
+    });
+    const sur = h('button', 'ghost', 'Surligner les cases de cette couleur'); sur.type = 'button';
+    const g = h('div', 'grille'); g.style.gridTemplateColumns = 'repeat(' + COLS + ', 1fr)';
+    const els = L.map((v, i) => {
+      const d = h('div', 'cel', S.cells[i] ? '' : String(v)); d.dataset.i = i;
+      if (S.cells[i]) d.style.background = COULEURS[v - 1];
+      g.append(d); return d;
+    });
+    const surligner = () => els.forEach((d, i) => d.classList.toggle('hl', aide && !S.cells[i] && L[i] === coul));
+    sur.onclick = () => { aide = !aide; sur.textContent = aide ? 'Ne plus surligner' : 'Surligner les cases de cette couleur'; surligner(); };
+    const compteur = h('p', 'note'), fin = h('div');
+
+    function maj() {
+      const n = S.cells.filter(Boolean).length;
+      compteur.textContent = n + ' / ' + L.length + ' cases';
+      if (n < L.length || codeVu) return;
+      codeVu = true; g.classList.add('fini'); pal.hidden = true; sur.hidden = true;
+      codeIdx.forEach((i) => els[i].classList.add('code'));
+      fin.append(h('p', null, 'Le gâteau est terminé. Un code est caché dedans : regarde ce qui brille, puis entre-le ici.'));
+      const [row, err] = saisie('Le code', 'numeric', (v) => {
+        if (v.trim() !== CONFIG.code) return false;
+        S.step = 2; S.t1 = Date.now(); ecrire(); render(); return true;
+      }, 'Ce n’est pas le bon code. Regarde bien le gâteau.');
+      fin.append(row, err);
+    }
+    function peindre(i, premier) {
+      if (S.cells[i]) return;
+      if (L[i] === coul) { S.cells[i] = 1; els[i].className = 'cel'; els[i].style.background = COULEURS[coul - 1]; els[i].textContent = ''; ecrire(); maj(); }
+      else if (premier) { els[i].classList.add('faux'); setTimeout(() => els[i].classList.remove('faux'), 300); }
+    }
+    const toucher = (e, premier) => { const t = document.elementFromPoint(e.clientX, e.clientY); if (t && t.dataset && t.dataset.i !== undefined) peindre(+t.dataset.i, premier); };
+    g.addEventListener('pointerdown', (e) => { drag = true; toucher(e, true); });
+    g.addEventListener('pointermove', (e) => { if (drag) toucher(e, false); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => g.addEventListener(t, () => { drag = false; }));
+
+    ecran.append(h('p', null, CONFIG.intro1), pal, sur, g, compteur, fin);
+    maj();
+  }
+
+  // ---------- Attente de 12 heures ----------
+  function ecranAttente(t, termine) {
+    titre(termine, CONFIG.attente.titre);
+    const c = h('p', 'compte');
+    ecran.append(h('p', null, CONFIG.attente.texte), c, h('p', 'note', 'Le prochain niveau s’ouvre tout seul : reviens sur cette page à ce moment-là.'));
+    const tick = () => {
+      const reste = t + ATTENTE - Date.now();
+      if (reste <= 0) { clearInterval(iv); S.step++; ecrire(); render(); return; }
+      c.textContent = fmt(reste);
+    };
+    iv = setInterval(tick, 1000); tick();
+  }
+
+  // ---------- Niveau 2 : le poème ----------
+  function ecran2() {
+    titre('Niveau 2 sur 4', 'Un petit poème');
+    const t = h('div', 'ticket'), p = h('p', 'poeme');
+    CONFIG.poeme.forEach((l) => { l = l.trim(); const s = h('span'); s.append(h('span', 'l', l.charAt(0)), document.createTextNode(l.slice(1))); p.append(s, h('br')); });
+    t.append(p);
+    const ind = h('button', 'ghost', 'Un indice ?'); ind.type = 'button';
+    ind.onclick = () => { p.classList.add('indice'); ind.hidden = true; };
+    const mot = norm(CONFIG.poeme.map((l) => l.trim().charAt(0)).join(''));
+    const [row, err] = saisie('Le mot caché', null, (v) => {
+      if (norm(v) !== mot) return false;
+      S.step = 4; S.t2 = Date.now(); ecrire(); render(); return true;
+    }, 'Ce n’est pas encore ça. Relis bien chaque ligne.');
+    ecran.append(h('p', null, CONFIG.intro2), t, ind, row, err);
+  }
+
+  // ---------- Niveau 3 : tu me connais bien ? ----------
+  function ecranJeu() {
+    titre('Niveau 3 sur 4', 'Tu me connais bien ?');
+    const N = CONFIG.cartes.length;
+    if (S.pos.length !== N) { S.pos = CONFIG.cartes.map(() => 0); S.ordre = CONFIG.cartes.map((_, i) => i).sort(() => Math.random() - .5); ecrire(); }
+    let sel = null;
+    const msg = h('p', 'erreur'), val = h('button', null, 'Valider'); val.type = 'button';
+    const zones = [{ pos: 0, t: 'Cartes à classer' }, { pos: 1, t: CONFIG.colonnes[0] }, { pos: 2, t: CONFIG.colonnes[1] }];
+    const hold = zones.map((z) => {
+      const box = h('div', 'zone z' + z.pos), dep = h('button', 'depot', z.t), liste = h('div', 'liste');
+      dep.type = 'button';
+      dep.onclick = () => { if (sel === null) return; S.pos[sel] = z.pos; sel = null; ecrire(); dessiner(); };
+      box.append(dep, liste);
+      return { box, liste };
+    });
+    function dessiner() {
+      hold.forEach((z) => z.liste.replaceChildren());
+      S.ordre.forEach((i) => {
+        const b = h('button', 'jcarte' + (sel === i ? ' sel' : ''), CONFIG.cartes[i].t); b.type = 'button';
+        b.onclick = () => { sel = sel === i ? null : i; dessiner(); };
+        hold[S.pos[i]].liste.append(b);
+      });
+      val.disabled = S.pos.some((p) => p === 0);
+      msg.textContent = '';
+    }
+    val.onclick = () => {
+      const bonnes = CONFIG.cartes.filter((c, i) => S.pos[i] === (c.aime ? 1 : 2)).length;
+      if (bonnes === N) { S.step = 6; ecrire(); render(); return; }
+      msg.textContent = 'Pas encore : ' + bonnes + ' sur ' + N + ' bien placées. Tu peux déplacer les autres.';
+    };
+    const grille = h('div', 'zones'); grille.append(hold[1].box, hold[2].box);
+    ecran.append(h('p', null, CONFIG.intro3), hold[0].box, grille, val, msg);
+    dessiner();
+  }
+
+  // ---------- Niveau 4 : elle compose son date ----------
+  function ecran4() {
+    titre('Niveau 4 sur 4', 'Compose ton date');
+    ecran.append(h('p', null, CONFIG.intro4));
+    const go = h('button', null, 'Obtenir mon bon'); go.type = 'button';
+    const maj = () => { go.disabled = CONFIG.date.some((_, i) => !S.choix[i]); };
+    CONFIG.date.forEach((gr, i) => {
+      const box = h('div', 'choix');
+      gr.o.forEach((o) => {
+        const b = h('button', 'opt', o); b.type = 'button'; b.setAttribute('aria-pressed', S.choix[i] === o);
+        b.onclick = () => { S.choix[i] = o; ecrire(); [...box.children].forEach((x) => x.setAttribute('aria-pressed', x === b)); maj(); };
+        box.append(b);
+      });
+      ecran.append(h('p', 'q', gr.q), box);
+    });
+    go.onclick = () => { S.step = 7; S.bon = Date.now(); ecrire(); render(); };
+    ecran.append(go); maj();
+  }
+
+  // ---------- Le bon ----------
+  function ecranBon() {
+    titre('Bravo ♥', 'Ton bon pour un date');
+    const t = h('div', 'ticket bon');
+    t.append(h('p', 'pre', 'BON POUR UN DATE'), h('p', 'gros', 'Pour ' + CONFIG.prenom));
+    CONFIG.date.forEach((gr, i) => t.append(h('p', 'ligne', gr.q + ' : ' + S.choix[i])));
+    const quand = new Date(S.bon).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const coupe = h('div', 'coupe');
+    coupe.append(h('p', 'ligne', 'Délivré le ' + quand), h('p', 'petit', CONFIG.messageFinal), h('p', 'petit', CONFIG.signature));
+    t.append(coupe);
+    ecran.append(t, h('p', 'note', 'Fais une capture d’écran de ce bon et montre-la-moi le jour où tu veux ton date.'));
+  }
+
+  function render() {
+    clearInterval(iv); ecran.replaceChildren();
+    ({ 1: ecran1, 2: () => ecranAttente(S.t1, 'Niveau 1 terminé'), 3: ecran2, 4: () => ecranAttente(S.t2, 'Niveau 2 terminé'), 5: ecranJeu, 6: ecran4, 7: ecranBon }[S.step] || ecran1)();
+    window.scrollTo(0, 0);
+  }
+
+  // Outils pour toi (à ajouter à l’adresse) : #test (attentes de 8 s), #n2, #n3, #n4, #bon, #reset
+  const hash = location.hash.slice(1);
+  if (hash === 'reset') { try { localStorage.removeItem(KEY); } catch (e) {} S = defaut(); history.replaceState(null, '', location.pathname); }
+  if (hash === 'test') ATTENTE = 8000;
+  if (hash === 'n2') S.step = 3;
+  if (hash === 'n3') S.step = 5;
+  if (hash === 'n4') S.step = 6;
+  if (hash === 'bon') { S.step = 7; S.bon = Date.now(); CONFIG.date.forEach((g, i) => { S.choix[i] = S.choix[i] || g.o[0]; }); }
+  render();
+</script>
+</body>
+</html>
