@@ -152,7 +152,7 @@
   const GLYPH = { 0:'111101101101111', 1:'010110010010111', 2:'111001111100111', 3:'111001111001111', 4:'101101111001001',
                   5:'111100111001111', 6:'111100111101111', 7:'111001001001001', 8:'111101111101111', 9:'111101111001111' };
   const KEY = 'chasse-hind-v1';
-  const defaut = () => ({ step: 1, cells: [], t1: 0, t2: 0, t3: 0, pos: [], ordre: [], choix: {}, bon: 0 });
+  const defaut = () => ({ step: 0, cells: [], t1: 0, t2: 0, t3: 0, pos: [], ordre: [], choix: {}, bon: 0 });
   const lire = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } };
   const ecrire = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
   let S = Object.assign(defaut(), lire() || {});
@@ -163,7 +163,7 @@
   const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
   const fmt = (ms) => { const s = Math.ceil(ms / 1000); return [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map((x) => String(x).padStart(2, '0')).join(':'); };
   // Une saison par niveau : 1 automne, 2 hiver, 3 printemps, 4 été (les attentes gardent la saison du niveau terminé)
-  const SAISON = { 1: 'automne', 2: 'automne', 3: 'hiver', 4: 'hiver', 5: 'printemps', 6: 'ete', 7: 'ete', 8: 'ete' };
+  const SAISON = { 0: 'automne', 1: 'automne', 2: 'automne', 3: 'hiver', 4: 'hiver', 5: 'printemps', 6: 'ete', 7: 'ete', 8: 'ete' };
   const THEMES = {
     automne:   { n: 16, cls: 'feuille', cols: ['#C8642B', '#D98B2B', '#A63D2A', '#E0A92F', '#8F4A22'] },
     hiver:     { n: 28, cls: 'neige',   cols: ['#FFFFFF'] },
@@ -193,6 +193,22 @@
     b.onclick = go; inp.onkeydown = (e) => { if (e.key === 'Enter') go(); };
     row.append(inp, b);
     return [row, err];
+  }
+
+  // ---------- Écran d'accueil ----------
+  function ecranAccueil() {
+    titre('', 'Bienvenue dans cette petite chasse au trésor, ' + CONFIG.prenom + ' ! ❤️');
+    const carte = h('div', 'ticket');
+    [
+      'Je t’ai préparé quelques énigmes, des petits défis et des surprises à découvrir au fil de ton aventure.',
+      'Prends ton temps, amuse-toi et surtout, ne baisse pas les bras ! Une jolie récompense t’attend au bout du chemin… 🎁',
+      'J’espère que cette petite attention te fera sourire et que tu prendras autant de plaisir à la découvrir que j’en ai pris à l’imaginer.',
+      'Prête à relever le défi ? ❤️'
+    ].forEach((phrase) => carte.append(h('p', null, phrase)));
+    const commencer = h('button', null, 'Commencer l’aventure ❤️');
+    commencer.type = 'button';
+    commencer.onclick = () => { S.step = 1; ecrire(); render(); };
+    ecran.append(carte, commencer);
   }
 
   // ---------- Niveau 1 : le gâteau à colorier ----------
@@ -391,7 +407,7 @@
     clearInterval(iv); ecran.replaceChildren();
     const saison = SAISON[S.step] || 'automne';
     if (document.documentElement.dataset.s !== saison) { document.documentElement.dataset.s = saison; particules(saison); }
-    ({ 1: ecran1, 2: () => ecranAttente(S.t1, '', CONFIG.attente1), 3: ecran2, 4: () => ecranAttente(S.t2, 'Niveau 2 terminé'), 5: ecranJeu, 6: ecran4, 7: () => ecranAttente(S.t3, 'Niveau 4 terminé', CONFIG.attente3), 8: ecranBon }[S.step] || ecran1)();
+    ({ 0: ecranAccueil, 1: ecran1, 2: () => ecranAttente(S.t1, '', CONFIG.attente1), 3: ecran2, 4: () => ecranAttente(S.t2, 'Niveau 2 terminé'), 5: ecranJeu, 6: ecran4, 7: () => ecranAttente(S.t3, 'Niveau 4 terminé', CONFIG.attente3), 8: ecranBon }[S.step] || ecran1)();
     window.scrollTo(0, 0);
   }
 
